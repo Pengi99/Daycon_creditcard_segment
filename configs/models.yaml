@@ -1,0 +1,56 @@
+pipeline:
+  model_name: "lgbm"   # 사용할 모델 선택: lgbm | catboost | rf
+
+models:
+  # ------------------------------------------------------------
+  # 아래 각 모델 블록별로 파라미터와 튜닝 가이드를 주석으로 남겨두었습니다.
+  # 값을 수정할 때는 주석 설명을 참고해 실험해 보세요.
+  # ------------------------------------------------------------
+  
+  # ====================== LightGBM ======================
+  lgbm:
+    objective: "multiclass"   # 목적 함수: binary | multiclass | regression 등
+    num_class: 5              # 클래스 개수 (objective=multiclass 시 필수)
+    learning_rate: 0.1        # 학습률 (0.01~0.3 권장, 작을수록 성능↑, 반복수 필요)
+    n_estimators: 100         # 부스팅 반복수 (Early Stopping 사용 시 크게 두고 조기종료)
+    max_depth: 7              # 트리 최대 깊이 (-1 = 제한 없음)
+
+    # ---- 추가로 유용한 파라미터 (필요 시 주석 해제) ----
+    # num_leaves: 31          # 리프 노드 수 (복잡도 조절; 2^max_depth 보다 작게)
+    # subsample: 0.8          # 행 샘플링 비율 (과적합 완화, 0.5~1.0)
+    # colsample_bytree: 0.8   # 열 샘플링 비율 (고차원 데이터에서 특히 효과적)
+    # reg_lambda: 0.0         # L2 정규화 (과적합 시 0~10 범위 탐색)
+    # reg_alpha: 0.0          # L1 정규화 (희소성 유도)
+    # min_child_samples: 20   # 리프 최소 샘플수 (값 ↑ ⇒ 과적합↓)
+    # boosting_type: "gbdt"   # gbdt | dart | goss | rf
+    # max_bin: 255            # histogram bin 수 (속도·메모리·정밀도 트레이드오프)
+
+  # ====================== CatBoost ======================
+  catboost:
+    task_type: "GPU"          # "CPU" 또는 "GPU" (GPU 사용 시 속도↑)
+    devices: "0"              # 사용할 GPU id
+    learning_rate: 0.05       # 학습률 (작을수록 성능↑, iterations↑)
+    depth: 6                  # 트리 깊이
+    iterations: 500           # 부스팅 반복수
+
+    # ---- 추가로 유용한 파라미터 (필요 시 주석 해제) ----
+    # loss_function: "MultiClass"
+    # l2_leaf_reg: 3.0         # L2 정규화
+    # bagging_temperature: 1.0 # 0(없음)~1(강함), 과적합 완화
+    # random_strength: 1.0     # 분할 무작위성
+    # border_count: 128        # 수치 변수 bin 개수
+    # early_stopping_rounds: 50 # overfitting_detector 로 조기 종료
+
+  # ====================== RandomForest ======================
+  rf:
+    n_estimators: 300         # 트리 수 (많을수록 성능↑, 속도↓)
+    max_depth: null           # 트리 최대 깊이 (null = 제한 없음)
+    min_samples_leaf: 2       # 리프 최소 샘플수
+
+    # ---- 추가로 유용한 파라미터 (필요 시 주석 해제) ----
+    # criterion: "gini"       # gini | entropy | log_loss
+    # max_features: "sqrt"    # 분할 시 고려할 특징 수 (sqrt, log2, None, float)
+    # min_samples_split: 2    # 노드 분할 최소 샘플수
+    # bootstrap: true         # 부트스트랩 샘플 사용 여부
+    # n_jobs: -1              # 병렬 처리 코어 수 (-1 = 모든 코어)
+    # random_state: 42        # 재현성
